@@ -1,0 +1,15 @@
+{
+  "name": "rm-upi-qr",
+  "private": true,
+  "version": "1.0.0",
+  "description": "RM UPI QR — generate UPI payment QR codes and keep a day-wise history, on Cloudflare Pages + D1.",
+  "scripts": {
+    "dev": "wrangler pages dev public --d1=DB=rm_upi_qr_db",
+    "deploy": "wrangler pages deploy public --project-name=rm-upi-qr",
+    "db:schema:remote": "wrangler d1 execute rm_upi_qr_db --remote --file=./schema.sql",
+    "db:schema:local": "wrangler d1 execute rm_upi_qr_db --local --file=./schema.sql"
+  },
+  "devDependencies": {
+    "wrangler": "^3.90.0"
+  }
+}

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<title>RM UPI QR</title>
+<meta name="description" content="Generate a UPI payment QR instantly." />
+<meta name="theme-color" content="#f6f5f1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="RM UPI QR" />
+<link rel="manifest" href="/manifest.json" />
+<link rel="apple-touch-icon" href="/icons/icon-180.png" />
+<link rel="icon" href="/icons/icon-192.png" />
+<link rel="stylesheet" href="/css/style.css" />
+<script>
+  (function () {
+    var t = localStorage.getItem("rm-upi-qr-theme") || "light";
+    document.documentElement.setAttribute("data-theme", t);
+  })();
+</script>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="/" class="wordmark">
+    <span class="brand-name">Raj Machinery</span>
+    <span class="brand-loc">Mulund (W), Mumbai</span>
+  </a>
+  <div class="topbar-actions">
+    <a href="/history.html" class="text-link">History</a>
+    <button id="theme-toggle" class="icon-btn" aria-label="Toggle dark mode"></button>
+  </div>
+</header>
+
+<main>
+
+  <section class="ticket" id="entry-view">
+    <div class="readout">
+      <div class="label">Enter amount</div>
+      <div class="amount mono" id="amount-display">
+        <span class="rupee">₹</span><span id="amount-text">0</span><span class="caret"></span>
+      </div>
+    </div>
+
+    <div class="keypad" id="keypad" aria-label="Amount keypad">
+      <button data-key="1">1</button>
+      <button data-key="2">2</button>
+      <button data-key="3">3</button>
+      <button data-key="4">4</button>
+      <button data-key="5">5</button>
+      <button data-key="6">6</button>
+      <button data-key="7">7</button>
+      <button data-key="8">8</button>
+      <button data-key="9">9</button>
+      <button data-key="." class="fn">.</button>
+      <button data-key="0">0</button>
+      <button data-key="back" id="backspace-btn" class="fn" aria-label="Delete last digit">⌫</button>
+    </div>
+
+    <div class="ticket-footer">
+      <button class="primary-btn" id="generate-btn" disabled>Generate QR</button>
+    </div>
+  </section>
+
+  <section class="qr-panel hidden" id="qr-view">
+    <div class="qr-head">
+      <div class="qr-amount mono" id="qr-amount-text">₹0</div>
+      <div class="qr-payee">Scan with any UPI app to pay</div>
+    </div>
+    <div class="qr-canvas-wrap">
+      <canvas id="qr-canvas"></canvas>
+    </div>
+    <div class="qr-actions">
+      <button class="ghost-btn hidden" id="share-qr-btn">Share QR code</button>
+      <button class="ghost-btn" id="copy-link-btn">Copy payment link</button>
+      <button class="primary-btn" id="new-payment-btn">New payment</button>
+    </div>
+    <div class="save-note" id="save-note"></div>
+  </section>
+
+</main>
+
+<div class="modal-backdrop hidden" id="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+  <div class="modal">
+    <h2 id="confirm-title">Confirm amount</h2>
+    <div class="confirm-amount mono" id="confirm-amount-text">₹0</div>
+    <div class="confirm-words" id="confirm-words-text"></div>
+    <div class="modal-actions">
+      <button class="ghost-btn" id="confirm-no">No, edit</button>
+      <button class="primary-btn" id="confirm-yes">Yes, confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/js/vendor/qrcode.min.js"></script>
+<script type="module" src="/js/app.js"></script>
+</body>
+</html>

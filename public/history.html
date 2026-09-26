@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<title>History — RM UPI QR</title>
+<meta name="description" content="Day-wise history of UPI QR payments." />
+<meta name="theme-color" content="#f6f5f1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="RM UPI QR" />
+<link rel="manifest" href="/manifest.json" />
+<link rel="apple-touch-icon" href="/icons/icon-180.png" />
+<link rel="icon" href="/icons/icon-192.png" />
+<link rel="stylesheet" href="/css/style.css" />
+<script>
+  (function () {
+    var t = localStorage.getItem("rm-upi-qr-theme") || "light";
+    document.documentElement.setAttribute("data-theme", t);
+  })();
+</script>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="/" class="wordmark">
+    <span class="brand-name">Raj Machinery</span>
+    <span class="brand-loc">Mulund (W), Mumbai</span>
+  </a>
+  <div class="topbar-actions">
+    <a href="/" class="text-link">New QR</a>
+    <button id="theme-toggle" class="icon-btn" aria-label="Toggle dark mode"></button>
+  </div>
+</header>
+
+<main>
+
+  <div id="skeleton" class="skeleton">Loading history…</div>
+
+  <div id="empty-state" class="empty-state hidden">
+    No QR codes generated yet.<br />Head to the home page to create your first one.
+  </div>
+
+  <div class="view-tabs hidden" id="view-tabs" role="tablist">
+    <button class="tab-btn active" data-view="day" role="tab">Day</button>
+    <button class="tab-btn" data-view="range" role="tab">Range</button>
+    <button class="tab-btn" data-view="month" role="tab">Month</button>
+  </div>
+
+  <section id="day-view" class="view-panel hidden">
+    <div class="date-rail" id="date-rail"></div>
+    <div class="summary-card" id="day-summary"></div>
+    <ul class="txn-list" id="day-txn-list"></ul>
+  </section>
+
+  <section id="range-view" class="view-panel hidden">
+    <div class="preset-chips" id="preset-chips">
+      <button type="button" class="preset-chip" data-preset="7">Last 7 days</button>
+      <button type="button" class="preset-chip" data-preset="30">Last 30 days</button>
+      <button type="button" class="preset-chip" data-preset="month">This month</button>
+    </div>
+    <div class="range-inputs">
+      <label>From<input type="date" id="range-from" /></label>
+      <label>To<input type="date" id="range-to" /></label>
+      <button type="button" class="primary-btn" id="range-apply">Apply</button>
+    </div>
+    <div class="summary-card" id="range-summary"></div>
+    <ul class="txn-list" id="range-txn-list"></ul>
+  </section>
+
+  <section id="month-view" class="view-panel hidden">
+    <ul class="month-list" id="month-list"></ul>
+  </section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script type="module" src="/js/history.js"></script>
+</body>
+</html>

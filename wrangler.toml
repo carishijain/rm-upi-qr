@@ -1,0 +1,11 @@
+name = "rm-upi-qr"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = "public"
+
+# D1 binding used by the /functions/api/* code as `env.DB`.
+# After creating the database with `wrangler d1 create rm_upi_qr_db`,
+# paste the database_id it prints below.
+[[d1_databases]]
+binding = "DB"
+database_name = "rm_upi_qr_db"
+database_id = "REPLACE-WITH-YOUR-D1-DATABASE-ID"
