@@ -8,4 +8,4 @@ pages_build_output_dir = "public"
 [[d1_databases]]
 binding = "DB"
 database_name = "rm_upi_qr_db"
-database_id = "REPLACE-WITH-YOUR-D1-DATABASE-ID"
+database_id = "ad3126db-4b22-4c4a-90e4-d33c4f433e0d"
