@@ -2,6 +2,7 @@ import { initTheme } from "./theme.js";
 import { formatIndianNumber, amountToWords } from "./format.js";
 import { payeeForAmount, buildUpiLink } from "./payees.js";
 import { createTransaction } from "./api.js";
+import { buildShareCardBlob } from "./sharecard.js";
 
 initTheme();
 
@@ -30,6 +31,7 @@ const els = {
 };
 
 let currentUpiLink = "";
+let currentUpiId = "";
 let currentAmount = 0;
 let toastTimer = null;
 
@@ -136,6 +138,7 @@ els.confirmYes.addEventListener("click", async () => {
 async function showQr(amount) {
   const payee = payeeForAmount(amount);
   currentUpiLink = buildUpiLink(payee, amount);
+  currentUpiId = payee.upi_id;
   currentAmount = amount;
 
   els.qrAmountText.textContent = "₹" + formatIndianNumber(amount.toFixed(amount % 1 ? 2 : 0));
@@ -173,8 +176,8 @@ async function showQr(amount) {
 
 els.shareQrBtn.addEventListener("click", async () => {
   try {
-    const blob = await new Promise((resolve) => els.qrCanvas.toBlob(resolve, "image/png"));
-    if (!blob) throw new Error("Canvas produced no image");
+    const blob = await buildShareCardBlob({ upiLink: currentUpiLink, upiId: currentUpiId });
+    if (!blob) throw new Error("Card render produced no image");
     const file = new File([blob], "payment-qr.png", { type: "image/png" });
     await navigator.share({
       files: [file],

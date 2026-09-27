@@ -55,7 +55,8 @@ rm-upi-qr/
 │   ├── index.html           # amount entry + QR
 │   ├── history.html         # day-wise history
 │   ├── css/style.css
-│   ├── js/                  # app.js, history.js, theme.js, api.js, format.js, payees.js
+│   ├── js/                  # app.js, history.js, theme.js, api.js, format.js,
+│   │                        # payees.js, sharecard.js
 │   ├── icons/                # app icons (home-screen / favicon)
 │   └── manifest.json
 ├── functions/api/           # Cloudflare Pages Functions (the backend)
@@ -167,9 +168,18 @@ and in `format.js`'s `categoryLabel()`) would need a matching third bucket.
 - The site opens in **Light Mode** by default on every device; the sun/moon
   button top-right toggles it, and each device remembers its own choice.
 - On the QR screen, **Share QR code** opens the iPhone/Android native share
-  sheet with the QR as an image (AirDrop, Messages, Photos, etc.) — it only
-  appears on browsers that support sharing image files, so it won't show up
-  on a desktop browser where it wouldn't work.
+  sheet with a branded card image (built by `public/js/sharecard.js`, QR
+  composited in live) rather than a bare QR — it only appears on browsers
+  that support sharing image files, so it won't show up on a desktop browser
+  where it wouldn't work.
+
+  This card is the **one deliberate exception** to "no UPI ID is ever shown"
+  above: it prints the real UPI ID as text beneath the QR, by request, so
+  that someone who reopens a saved copy of the image later and scans it from
+  their photo gallery — where UPI apps commonly block payments of ₹2,000 or
+  more — can still pay by typing that ID in manually. The ID shown always
+  matches whichever account that specific QR actually pays into. Nothing
+  else on the site does this.
 - The keypad (rather than a plain text field) keeps entry fast and avoids
   the iOS Safari zoom-on-focus behaviour that small number inputs trigger.
 - The page can be added to the iPhone home screen (Share → Add to Home
