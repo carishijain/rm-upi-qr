@@ -204,10 +204,11 @@ async function toggleTxnStatus(txn, action, onSettled) {
 //
 // Tapping the delete button expands it into the red "Delete" pill (the class
 // `.confirming` drives that, so it animates the same on iPhone as on desktop).
-// The confirmation popup only opens after that animation has finished and
-// held for a moment — opening it instantly would cut the animation off.
-// Change this one number to make the pause shorter or longer.
-const DELETE_POPUP_DELAY_MS = 1000;
+// The confirmation popup only opens once that animation has finished AND the
+// button has then sat expanded for a few seconds — opening it sooner would
+// cut the animation off. Both numbers are in milliseconds:
+const DELETE_ANIMATION_MS = 350; // the button's expand transition is 0.3s
+const DELETE_POPUP_DELAY_MS = 3000; // how long to wait after it has finished
 
 const deleteModal = {
   root: document.getElementById("delete-modal"),
@@ -275,7 +276,7 @@ function handleDeleteClick(btn, txn, onDeleted) {
     // Skip if the list re-rendered meanwhile, or another button took over.
     if (!btn.isConnected || !btn.classList.contains("confirming")) return;
     openDeleteModal({ txn, btn, onDeleted });
-  }, DELETE_POPUP_DELAY_MS);
+  }, DELETE_ANIMATION_MS + DELETE_POPUP_DELAY_MS);
 }
 
 function renderTxnList(container, txns, { showDate, findTxn, onChange, onDeleted }) {
