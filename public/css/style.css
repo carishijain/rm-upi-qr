@@ -820,15 +820,17 @@ main {
   fill: white;
 }
 
-.delete-btn:hover,
-.delete-btn:focus-visible {
+/* The expanded "Delete" pill. `.confirming` is set by history.js on tap, so
+   the animation plays the same on touch devices, which have no real hover. */
+.delete-btn:focus-visible,
+.delete-btn.confirming {
   width: 100px;
   border-radius: 50px;
   background-color: var(--red);
 }
 
-.delete-btn:hover .delete-icon,
-.delete-btn:focus-visible .delete-icon {
+.delete-btn:focus-visible .delete-icon,
+.delete-btn.confirming .delete-icon {
   width: 36px;
   transform: translateY(60%);
 }
@@ -842,11 +844,72 @@ main {
   transition: font-size 0.3s, transform 0.3s, opacity 0.3s;
 }
 
-.delete-btn:hover::before,
-.delete-btn:focus-visible::before {
+.delete-btn:focus-visible::before,
+.delete-btn.confirming::before {
   font-size: 11px;
   opacity: 1;
   transform: translateY(22px);
+}
+
+/* Mouse hover only where a real hover exists — on iPhone, :hover sticks
+   after a tap and would leave the button stuck open after cancelling. */
+@media (hover: hover) {
+  .delete-btn:hover {
+    width: 100px;
+    border-radius: 50px;
+    background-color: var(--red);
+  }
+  .delete-btn:hover .delete-icon {
+    width: 36px;
+    transform: translateY(60%);
+  }
+  .delete-btn:hover::before {
+    font-size: 11px;
+    opacity: 1;
+    transform: translateY(22px);
+  }
+}
+
+.delete-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* Delete confirmation popup: reuses the .modal look from the home page's
+   "Confirm amount" sheet, with a soft fade/slide-in so it arrives smoothly
+   after the button's own animation. */
+.modal-backdrop.soft-in:not(.hidden) {
+  animation: backdrop-in 0.25s ease-out;
+}
+
+.modal-backdrop.soft-in:not(.hidden) .modal {
+  animation: sheet-in 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes sheet-in {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.danger-btn {
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  background: var(--red);
+  color: #fff;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 16px;
+  cursor: pointer;
+}
+
+.danger-btn:active {
+  filter: brightness(0.9);
 }
 
 .empty-state {

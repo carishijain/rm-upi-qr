@@ -20,8 +20,12 @@ to manage.
    - **Day** — pick a date from the rail, mark each transaction **Done**
      (money actually received) or **Ignore** (QR shown but not paid /
      duplicate / test). Tap a status again to undo it back to pending. The
-     small round button on the right **permanently deletes** that row —
-     tapping it asks you to confirm first, since it can't be undone.
+     small round button on the right **permanently deletes** that row. Tap
+     it and it expands into a red "Delete" pill; after a short pause a
+     confirmation popup slides in ("Keep it" / "Delete"). The pause exists so
+     the button's animation can finish before the popup appears — change
+     `DELETE_POPUP_DELAY_MS` at the top of the delete section in
+     `public/js/history.js` to make it shorter or longer.
    - **Range** — pick "Last 7 days" / "Last 30 days" / "This month", or set
      your own from/to dates, to see the total received over any period.
    - **Month** — every month you've ever used the app, each with its own

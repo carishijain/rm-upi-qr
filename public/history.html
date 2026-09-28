@@ -74,6 +74,18 @@
 
 </main>
 
+<div class="modal-backdrop soft-in hidden" id="delete-modal" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+  <div class="modal">
+    <h2 id="delete-title">Delete this entry?</h2>
+    <div class="confirm-amount mono" id="delete-amount-text">₹0</div>
+    <div class="confirm-words" id="delete-detail-text"></div>
+    <div class="modal-actions">
+      <button type="button" class="ghost-btn" id="delete-cancel">Keep it</button>
+      <button type="button" class="danger-btn" id="delete-confirm">Delete</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module" src="/js/history.js"></script>

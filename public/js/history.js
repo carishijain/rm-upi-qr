@@ -200,20 +200,82 @@ async function toggleTxnStatus(txn, action, onSettled) {
   }
 }
 
-// Deletion isn't optimistic (unlike Done/Ignore) — it only disappears from
-// the list once the server has actually confirmed it's gone, since it can't
-// be undone.
-async function handleDelete(txn, onDeleted) {
-  const amountStr = formatIndianNumber(txn.amount % 1 ? txn.amount.toFixed(2) : txn.amount);
-  const confirmed = window.confirm(`Delete the ₹${amountStr} transaction? This can't be undone.`);
-  if (!confirmed) return;
+// ---------- Delete: animate, hold, then confirm ----------
+//
+// Tapping the delete button expands it into the red "Delete" pill (the class
+// `.confirming` drives that, so it animates the same on iPhone as on desktop).
+// The confirmation popup only opens after that animation has finished and
+// held for a moment — opening it instantly would cut the animation off.
+// Change this one number to make the pause shorter or longer.
+const DELETE_POPUP_DELAY_MS = 1000;
 
-  try {
-    await deleteTransaction(txn.id);
-    onDeleted(txn.id);
-  } catch {
-    showToast("Couldn't delete — check your connection");
-  }
+const deleteModal = {
+  root: document.getElementById("delete-modal"),
+  amount: document.getElementById("delete-amount-text"),
+  detail: document.getElementById("delete-detail-text"),
+  cancel: document.getElementById("delete-cancel"),
+  confirm: document.getElementById("delete-confirm"),
+};
+
+let pendingDelete = null; // { txn, btn, onDeleted } while the popup is open
+
+function openDeleteModal(pending) {
+  pendingDelete = pending;
+  const { txn } = pending;
+  const amountStr = txn.amount % 1 ? txn.amount.toFixed(2) : txn.amount;
+  deleteModal.amount.textContent = "₹" + formatIndianNumber(amountStr);
+  deleteModal.detail.textContent = `${shortDayMonth(txn.txn_date)}, ${txn.txn_time} · This can't be undone.`;
+  deleteModal.root.classList.remove("hidden");
+}
+
+function closeDeleteModal({ collapseButton }) {
+  deleteModal.root.classList.add("hidden");
+  if (collapseButton && pendingDelete) pendingDelete.btn.classList.remove("confirming");
+  pendingDelete = null;
+}
+
+deleteModal.cancel.addEventListener("click", () => closeDeleteModal({ collapseButton: true }));
+
+deleteModal.root.addEventListener("click", (e) => {
+  if (e.target === deleteModal.root) closeDeleteModal({ collapseButton: true });
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && pendingDelete) closeDeleteModal({ collapseButton: true });
+});
+
+// Not optimistic (unlike Done/Ignore): the row only disappears once the
+// server has confirmed it's gone, since this can't be undone. The button
+// stays expanded and disabled while the request is in flight, and only
+// collapses back if the delete actually fails.
+deleteModal.confirm.addEventListener("click", () => {
+  if (!pendingDelete) return;
+  const { txn, btn, onDeleted } = pendingDelete;
+  closeDeleteModal({ collapseButton: false });
+  btn.disabled = true;
+  deleteTransaction(txn.id)
+    .then(() => onDeleted(txn.id))
+    .catch(() => {
+      btn.disabled = false;
+      btn.classList.remove("confirming");
+      showToast("Couldn't delete — check your connection");
+    });
+});
+
+function handleDeleteClick(btn, txn, onDeleted) {
+  if (btn.classList.contains("confirming")) return; // already on its way to the popup
+
+  // Only one button expanded at a time.
+  document.querySelectorAll(".delete-btn.confirming").forEach((other) => {
+    if (other !== btn && !other.disabled) other.classList.remove("confirming");
+  });
+
+  btn.classList.add("confirming");
+  setTimeout(() => {
+    // Skip if the list re-rendered meanwhile, or another button took over.
+    if (!btn.isConnected || !btn.classList.contains("confirming")) return;
+    openDeleteModal({ txn, btn, onDeleted });
+  }, DELETE_POPUP_DELAY_MS);
 }
 
 function renderTxnList(container, txns, { showDate, findTxn, onChange, onDeleted }) {
@@ -228,7 +290,7 @@ function renderTxnList(container, txns, { showDate, findTxn, onChange, onDeleted
     li.querySelectorAll("[data-action]").forEach((btn) => {
       const action = btn.dataset.action;
       if (action === "delete") {
-        btn.addEventListener("click", () => handleDelete(txn, onDeleted));
+        btn.addEventListener("click", () => handleDeleteClick(btn, txn, onDeleted));
       } else {
         btn.addEventListener("click", () => toggleTxnStatus(txn, action, onChange));
       }
