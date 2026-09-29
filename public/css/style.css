@@ -935,3 +935,11 @@ main {
   outline: 2px solid var(--brass);
   outline-offset: 2px;
 }
+
+.build-tag {
+  margin: auto 0 0;
+  padding-top: 32px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--steel-quiet);
+}
