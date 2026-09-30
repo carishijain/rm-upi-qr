@@ -60,7 +60,7 @@ rm-upi-qr/
 │   ├── history.html         # day-wise history
 │   ├── css/style.css
 │   ├── js/                  # app.js, history.js, theme.js, api.js, format.js,
-│   │                        # payees.js, sharecard.js
+│   │                        # payees.js, sharecard.js, loader.js
 │   ├── icons/                # app icons (home-screen / favicon)
 │   └── manifest.json
 ├── functions/api/           # Cloudflare Pages Functions (the backend)
@@ -149,6 +149,30 @@ replica. Apply the schema locally first:
 ```bash
 npm run db:schema:local
 ```
+
+## The opening loading screen
+
+Every time either page loads, a full-screen loader plays for 4 seconds
+before revealing the site — a breathing, rotating sphere of particles,
+ported from a SwiftUI view (`public/js/loader.js`, math mirrors the
+original section-by-section). It respects **Reduce Motion**: with that
+accessibility setting on, it shows one still frame instead of animating,
+for the same 4 seconds.
+
+**Worth knowing:** since Home and History are separate page loads (not one
+app), this plays on *every* visit to either page — including switching back
+and forth between them. For a tool meant for fast, repeated use through a
+work day, that may get old quickly. Two easy adjustments in
+`public/js/loader.js`:
+- Change `SHOW_DURATION_MS` (currently `4000`) to shorten it.
+- Wrap the call to `initLoader()` at the bottom of the file in
+  `if (!sessionStorage.getItem("seenLoader")) { initLoader(); sessionStorage.setItem("seenLoader", "1"); }`
+  to show it only once per browser tab session, rather than on every page.
+
+Other easy tweaks, all at the top of the same file: `SPHERE_SIZE`,
+`DOT_SIZE`, `BREATHING_SPEED`, `ROTATION_SPEED`. Colors follow the site's
+own `--ink` / `--steel` theme variables, so they already adapt to light and
+dark mode without extra work.
 
 ## Editing the payment rule
 
