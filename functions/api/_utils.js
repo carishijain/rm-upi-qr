@@ -36,6 +36,64 @@ export function nowIST() {
 
 export const VALID_STATUSES = ["pending", "done", "ignore"];
 
+// ---------- History password lock ----------
+//
+// Every timestamp compared here is produced by this Worker's own `new
+// Date()` — never a value the browser sends. That's what makes the lockout
+// immune to someone changing their phone's clock: the phone's idea of "now"
+// is never consulted when deciding whether an attempt is allowed.
+
+export const SESSION_COOKIE = "rm_session";
+export const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+export const LOCKOUT_MS = 24 * 60 * 60 * 1000; // 24 hours
+export const MAX_ATTEMPTS = 3;
+
+export async function sha256Hex(text) {
+  const data = new TextEncoder().encode(text);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+export function parseCookies(request) {
+  const header = request.headers.get("Cookie") || "";
+  const out = {};
+  for (const pair of header.split(";")) {
+    const idx = pair.indexOf("=");
+    if (idx === -1) continue;
+    out[pair.slice(0, idx).trim()] = decodeURIComponent(pair.slice(idx + 1).trim());
+  }
+  return out;
+}
+
+export function sessionCookieHeader(token, request) {
+  const maxAgeSeconds = Math.floor(SESSION_TTL_MS / 1000);
+  // Secure cookies are silently dropped by browsers over plain HTTP, which
+  // would break `wrangler pages dev` (http://localhost). Production
+  // (Cloudflare Pages) is always HTTPS, so this only ever omits Secure
+  // during local development.
+  const secure = request && request.url.startsWith("https://") ? "; Secure" : "";
+  return `${SESSION_COOKIE}=${token}; Path=/; Max-Age=${maxAgeSeconds}; HttpOnly${secure}; SameSite=Lax`;
+}
+
+export const CLEAR_SESSION_COOKIE_HEADER = `${SESSION_COOKIE}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax`;
+
+// True if this request carries a still-valid session cookie. Expired rows
+// are simply treated as "no session" — they don't need to be deleted for
+// this check to be correct, since expires_at is re-checked every time.
+export async function hasValidSession(request, env) {
+  const token = parseCookies(request)[SESSION_COOKIE];
+  if (!token) return false;
+  const row = await env.DB.prepare("SELECT expires_at FROM sessions WHERE token = ?").bind(token).first();
+  if (!row) return false;
+  return new Date(row.expires_at).getTime() > Date.now();
+}
+
+export function unauthorized() {
+  return json({ error: "Locked. Enter the History password." }, 401);
+}
+
 // The bank_label column stores exactly "below_2000" or "at_or_above_2000" —
 // set by the browser at creation time (see public/js/payees.js) — never a
 // real bank or account name. So exposing it as "category" needs no mapping.

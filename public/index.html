@@ -12,7 +12,7 @@
 <link rel="manifest" href="/manifest.json" />
 <link rel="apple-touch-icon" href="/icons/icon-180.png" />
 <link rel="icon" href="/icons/icon-192.png" />
-<link rel="stylesheet" href="/css/style-20260930b.css" />
+<link rel="stylesheet" href="/css/style-20261003.css" />
 <script>
   (function () {
     var t = localStorage.getItem("rm-upi-qr-theme") || "light";
@@ -23,8 +23,41 @@
 <body>
 
 <div id="app-loader" class="app-loader" role="status" aria-label="Loading">
-  <canvas id="loader-canvas"></canvas>
-  <div class="app-loader-brand">Raj Machinery</div>
+  <!-- Gearbox loader from Uiverse.io by Nawsome -->
+  <div class="gearbox">
+    <div class="overlay"></div>
+    <div class="gear one">
+      <div class="gear-inner">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+    </div>
+    <div class="gear two">
+      <div class="gear-inner">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+    </div>
+    <div class="gear three">
+      <div class="gear-inner">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+    </div>
+    <div class="gear four large">
+      <div class="gear-inner">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 
@@ -42,6 +75,13 @@
 </header>
 
 <main>
+
+  <div id="approve-badge" class="approve-badge hidden">
+    <a href="/history.html" id="approve-badge-link" class="approve-badge-link">
+      <span id="approve-badge-text">Approve today's transactions</span>
+    </a>
+    <button type="button" id="approve-badge-dismiss" class="approve-badge-dismiss" aria-label="Dismiss">✕</button>
+  </div>
 
   <section class="ticket" id="entry-view">
     <div class="readout">
@@ -87,6 +127,19 @@
     <div class="save-note" id="save-note"></div>
   </section>
 
+  <section class="split-view hidden" id="split-view">
+    <div class="split-head">
+      <div class="split-total mono" id="split-total-text">₹0</div>
+      <div class="split-sub" id="split-sub-text">Split into 0 QR codes</div>
+    </div>
+    <div class="split-qr-list" id="split-qr-list"></div>
+    <div class="qr-actions">
+      <button class="ghost-btn hidden" id="split-share-btn">Share all as image</button>
+      <button class="primary-btn" id="split-new-payment-btn">New payment</button>
+    </div>
+    <div class="save-note" id="split-save-note"></div>
+  </section>
+
 </main>
 
 <div class="modal-backdrop hidden" id="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
@@ -101,9 +154,27 @@
   </div>
 </div>
 
+<div class="modal-backdrop hidden" id="mode-modal" role="dialog" aria-modal="true" aria-labelledby="mode-title">
+  <div class="modal">
+    <h2 id="mode-title">How should this be paid?</h2>
+    <div class="confirm-amount mono" id="mode-amount-text">₹0</div>
+    <div class="mode-options">
+      <button type="button" class="mode-option" id="mode-direct">
+        <span class="mode-option-title">Pay Directly</span>
+        <span class="mode-option-sub">One QR code</span>
+      </button>
+      <button type="button" class="mode-option" id="mode-split">
+        <span class="mode-option-title">Split into Multiple QR Codes</span>
+        <span class="mode-option-sub">Each ₹1,999 or below</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="/js/vendor/qrcode.min.js"></script>
 <script type="module" src="/js/app.js?v=20260928a"></script>
+<script type="module" src="/js/approve-badge.js"></script>
 </body>
 </html>

@@ -1,9 +1,12 @@
-import { json, badRequest, CATEGORY_SUMS_SQL } from "./_utils.js";
+import { json, badRequest, CATEGORY_SUMS_SQL, hasValidSession, unauthorized } from "./_utils.js";
 
 // GET /api/summary?from=YYYY-MM-DD&to=YYYY-MM-DD
 // One combined total plus the below/above-₹2,000 breakdown for any date
-// range (inclusive, IST calendar dates). Powers the History page's Range tab.
+// range (inclusive, IST calendar dates). Powers the History page's Range
+// tab. Requires the History password (see auth/).
 export async function onRequestGet({ request, env }) {
+  if (!(await hasValidSession(request, env))) return unauthorized();
+
   const url = new URL(request.url);
   const from = url.searchParams.get("from");
   const to = url.searchParams.get("to");

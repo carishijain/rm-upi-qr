@@ -1,13 +1,18 @@
-import { json, badRequest, nowIST, CATEGORY_CASE_SQL } from "../_utils.js";
+import { json, badRequest, nowIST, CATEGORY_CASE_SQL, hasValidSession, unauthorized } from "../_utils.js";
 
 // GET /api/transactions                          -> most recent 100, newest first
 // GET /api/transactions?from=YYYY-MM-DD&to=YYYY-MM-DD -> all in that inclusive
 //     IST date range, oldest first (from == to for a single day)
+// Requires the History password (see auth/) — this is the list the History
+// page reads, as opposed to POST below, which the public home page uses to
+// create a transaction and deliberately has no login.
 //
 // Note: this deliberately never selects upi_id or bank_label — the browser
 // only ever learns which of the two anonymous "category" buckets a payment
 // fell into, never the actual account it went to.
 export async function onRequestGet({ request, env }) {
+  if (!(await hasValidSession(request, env))) return unauthorized();
+
   const url = new URL(request.url);
   const from = url.searchParams.get("from");
   const to = url.searchParams.get("to");
@@ -35,6 +40,9 @@ export async function onRequestGet({ request, env }) {
 }
 
 // POST /api/transactions  { amount: number, upi_id: string, bank_label: string }
+// Deliberately public — this is what the home page's QR generator calls,
+// and generating a QR to accept payment doesn't require the History
+// password. Only reading/managing existing transactions does.
 export async function onRequestPost({ request, env }) {
   let body;
   try {

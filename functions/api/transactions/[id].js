@@ -1,7 +1,19 @@
-import { json, badRequest, notFound, VALID_STATUSES, CATEGORY_CASE_SQL } from "../_utils.js";
+import {
+  json,
+  badRequest,
+  notFound,
+  VALID_STATUSES,
+  CATEGORY_CASE_SQL,
+  hasValidSession,
+  unauthorized,
+} from "../_utils.js";
 
 // PATCH /api/transactions/:id   { status: "done" | "ignore" | "pending" }
+// Requires the History password (see auth/) — this is how the History page
+// marks a transaction Done/Ignore.
 export async function onRequestPatch({ request, env, params }) {
+  if (!(await hasValidSession(request, env))) return unauthorized();
+
   const id = Number(params.id);
   if (!Number.isInteger(id)) {
     return badRequest("Invalid transaction id.");
@@ -31,7 +43,10 @@ export async function onRequestPatch({ request, env, params }) {
 }
 
 // DELETE /api/transactions/:id — permanently removes the row.
-export async function onRequestDelete({ env, params }) {
+// Requires the History password.
+export async function onRequestDelete({ request, env, params }) {
+  if (!(await hasValidSession(request, env))) return unauthorized();
+
   const id = Number(params.id);
   if (!Number.isInteger(id)) return badRequest("Invalid transaction id.");
 
@@ -44,7 +59,10 @@ export async function onRequestDelete({ env, params }) {
 }
 
 // GET /api/transactions/:id — occasionally handy, not used by the UI directly.
-export async function onRequestGet({ env, params }) {
+// Requires the History password.
+export async function onRequestGet({ request, env, params }) {
+  if (!(await hasValidSession(request, env))) return unauthorized();
+
   const id = Number(params.id);
   if (!Number.isInteger(id)) return badRequest("Invalid transaction id.");
 

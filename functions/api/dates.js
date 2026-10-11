@@ -1,10 +1,12 @@
-import { json, CATEGORY_SUMS_SQL } from "./_utils.js";
+import { json, CATEGORY_SUMS_SQL, hasValidSession, unauthorized } from "./_utils.js";
 
 // GET /api/dates
 // Every day that has at least one transaction, newest first, with the
 // "Done" grand total, the below/above-₹2,000 breakdown, and status counts
-// needed for the history page.
-export async function onRequestGet({ env }) {
+// needed for the history page. Requires the History password (see auth/).
+export async function onRequestGet({ request, env }) {
+  if (!(await hasValidSession(request, env))) return unauthorized();
+
   const result = await env.DB.prepare(
     `SELECT
        txn_date,

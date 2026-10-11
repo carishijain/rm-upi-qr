@@ -11,6 +11,8 @@
 // instead. The ID shown always matches whichever account this exact QR
 // actually pays into.
 
+import { formatIndianNumber } from "./format.js";
+
 const SCALE = 2; // renders at 2x the mockup's 553×1102 for a crisp share image
 const W = 553 * SCALE;
 const H = 1102 * SCALE;
@@ -151,4 +153,115 @@ export async function buildShareCardBlob({ upiLink, upiId }) {
   drawSparkle(ctx, W / 2, 985 * SCALE, 14 * SCALE, SPARKLE_COLOR);
 
   return new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+}
+
+// ---------- split-payment share card (grid of QR codes) ----------
+//
+// Matches the second mockup: brand header, the shared UPI ID once at the
+// top (every chunk pays into the same below-₹2,000 account), then as many
+// QR codes as there are chunks, two per row, each labelled with its own
+// amount. The canvas grows to fit however many are needed — there's no
+// fixed cap at 6; a "huge" amount just produces a taller image.
+
+const GRID_W = 1179;
+const GRID_MARGIN = 90;
+const GRID_INK = "#000000";
+const GRID_SUB_COLOR = "#2c2c2c";
+const GRID_QR_SIZE = 300;
+const GRID_ROW_GAP = 60;
+const GRID_CAPTION_GAP = 28;
+const GRID_CAPTION_HEIGHT = 40;
+
+// Returns a Promise<Blob|null> for the finished PNG.
+export async function buildSplitShareCardBlob({ chunks, upiId }) {
+  await ensureFontsReady();
+
+  const numRows = Math.ceil(chunks.length / 2);
+  const rowHeight = GRID_QR_SIZE + GRID_CAPTION_GAP + GRID_CAPTION_HEIGHT + GRID_ROW_GAP;
+  const gridTop = 400;
+  const gridH = gridTop + numRows * rowHeight - GRID_ROW_GAP + 70;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = GRID_W;
+  canvas.height = gridH;
+  const ctx = canvas.getContext("2d");
+
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, GRID_W, gridH);
+
+  // "Raj Machinery" + location
+  ctx.fillStyle = GRID_INK;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+  ctx.font = `700 68px ${FONT}`;
+  ctx.fillText("Raj Machinery", GRID_MARGIN, 150);
+  ctx.font = `500 34px ${FONT}`;
+  ctx.fillStyle = GRID_SUB_COLOR;
+  ctx.fillText("Mulund (W), Mumbai", GRID_MARGIN, 205);
+
+  // Shared UPI ID — every QR below pays into this same account
+  const upiLine = "UPI ID: " + upiId;
+  const upiFontSize = fitSingleLineAt(ctx, upiLine, GRID_W - GRID_MARGIN * 2, 44, 22, 700);
+  ctx.font = `700 ${upiFontSize}px ${FONT}`;
+  ctx.fillStyle = GRID_INK;
+  ctx.fillText(upiLine, GRID_MARGIN, 300);
+
+  // The QR grid itself
+  const leftX = GRID_MARGIN;
+  const rightX = GRID_W - GRID_MARGIN - GRID_QR_SIZE;
+
+  for (let i = 0; i < chunks.length; i++) {
+    const row = Math.floor(i / 2);
+    const col = i % 2;
+    const x = col === 0 ? leftX : rightX;
+    const y = gridTop + row * rowHeight;
+    const chunkAmount = chunks[i];
+
+    const link = buildSplitLinkForShare(upiId, chunkAmount);
+    const qrCanvas = document.createElement("canvas");
+    await QRCode.toCanvas(qrCanvas, link, {
+      width: GRID_QR_SIZE,
+      margin: 1,
+      color: { dark: "#1a2420", light: "#ffffff" },
+    });
+    ctx.drawImage(qrCanvas, x, y, GRID_QR_SIZE, GRID_QR_SIZE);
+
+    const captionY = y + GRID_QR_SIZE + GRID_CAPTION_GAP + GRID_CAPTION_HEIGHT * 0.7;
+    ctx.font = `700 32px ${FONT}`;
+    ctx.fillStyle = GRID_INK;
+    ctx.textAlign = "center";
+    ctx.fillText(
+      `QR ${i + 1} · ₹${formatIndianNumber(chunkAmount.toFixed(chunkAmount % 1 ? 2 : 0))}`,
+      x + GRID_QR_SIZE / 2,
+      captionY
+    );
+  }
+
+  return new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+}
+
+// Same upi://pay format as payees.js's buildUpiLink, duplicated here so this
+// file doesn't need to import the payee config just for link-building.
+function buildSplitLinkForShare(upiId, amount) {
+  const enc = encodeURIComponent;
+  return (
+    `upi://pay?pa=${upiId}` +
+    `&pn=${enc("Raj Machinery")}` +
+    `&am=${enc(amount.toFixed(2))}` +
+    `&cu=INR` +
+    `&tn=${enc("Payment to Raj Machinery")}`
+  );
+}
+
+// Like fitSingleLine, but for left-aligned text (fitSingleLine assumes the
+// text will be drawn centered; the starting font size/weight here are
+// passed explicitly since this card uses different sizes than the first).
+function fitSingleLineAt(ctx, text, maxWidth, startPx, minPx, weight) {
+  let size = startPx;
+  while (size > minPx) {
+    ctx.font = `${weight} ${size}px ${FONT}`;
+    if (ctx.measureText(text).width <= maxWidth) break;
+    size -= 2;
+  }
+  return size;
 }

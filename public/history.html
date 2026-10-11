@@ -12,7 +12,7 @@
 <link rel="manifest" href="/manifest.json" />
 <link rel="apple-touch-icon" href="/icons/icon-180.png" />
 <link rel="icon" href="/icons/icon-192.png" />
-<link rel="stylesheet" href="/css/style-20260930b.css" />
+<link rel="stylesheet" href="/css/style-20261003.css" />
 <script>
   (function () {
     var t = localStorage.getItem("rm-upi-qr-theme") || "light";
@@ -23,8 +23,41 @@
 <body>
 
 <div id="app-loader" class="app-loader" role="status" aria-label="Loading">
-  <canvas id="loader-canvas"></canvas>
-  <div class="app-loader-brand">Raj Machinery</div>
+  <!-- Gearbox loader from Uiverse.io by Nawsome -->
+  <div class="gearbox">
+    <div class="overlay"></div>
+    <div class="gear one">
+      <div class="gear-inner">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+    </div>
+    <div class="gear two">
+      <div class="gear-inner">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+    </div>
+    <div class="gear three">
+      <div class="gear-inner">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+    </div>
+    <div class="gear four large">
+      <div class="gear-inner">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 
@@ -43,7 +76,30 @@
 
 <main>
 
-  <div id="skeleton" class="skeleton">Loading history…</div>
+  <div id="auth-gate" class="auth-gate">
+    <div class="auth-card">
+      <div id="auth-form">
+        <h2>History is locked</h2>
+        <p class="auth-sub">Enter the password to continue.</p>
+        <input
+          type="password"
+          id="auth-password"
+          inputmode="numeric"
+          autocomplete="off"
+          placeholder="Password"
+        />
+        <button type="button" class="primary-btn" id="auth-submit">Unlock</button>
+        <div id="auth-error" class="auth-error hidden"></div>
+      </div>
+      <div id="auth-locked" class="hidden">
+        <h2>Too many attempts</h2>
+        <p class="auth-sub">Try again in:</p>
+        <div id="auth-countdown" class="auth-countdown mono">24:00:00</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="skeleton" class="skeleton hidden">Loading history…</div>
 
   <div id="empty-state" class="empty-state hidden">
     No QR codes generated yet.<br />Head to the home page to create your first one.
@@ -98,6 +154,6 @@
 
 <div class="toast" id="toast"></div>
 
-<script type="module" src="/js/history-20260930.js"></script>
+<script type="module" src="/js/auth.js"></script>
 </body>
 </html>

@@ -33,6 +33,24 @@ export function payeeForAmount(amount) {
   return amount < THRESHOLD ? PAYEE_BELOW : PAYEE_AT_OR_ABOVE;
 }
 
+// Splits a ₹2,000+ amount into chunks that are each ≤ SPLIT_MAX_CHUNK, so
+// every resulting QR can legally use the below-₹2,000 account. The last
+// chunk carries the remainder, e.g. splitIntoChunks(4500) -> [1999, 1999, 502].
+export const SPLIT_MAX_CHUNK = 1999;
+
+export function splitIntoChunks(total, maxChunk = SPLIT_MAX_CHUNK) {
+  const chunks = [];
+  // Round to paise throughout so repeated subtraction can't drift
+  // (e.g. 0.1 + 0.2 floating-point style errors) over many chunks.
+  let remaining = Math.round(total * 100) / 100;
+  while (remaining > maxChunk) {
+    chunks.push(maxChunk);
+    remaining = Math.round((remaining - maxChunk) * 100) / 100;
+  }
+  if (remaining > 0) chunks.push(remaining);
+  return chunks;
+}
+
 // NPCI UPI deep link — the same "upi://pay" format used by every UPI QR.
 // Built by hand (rather than URLSearchParams) so spaces come out as %20,
 // matching the convention every UPI app expects; URLSearchParams would

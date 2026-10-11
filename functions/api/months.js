@@ -1,9 +1,12 @@
-import { json, CATEGORY_SUMS_SQL } from "./_utils.js";
+import { json, CATEGORY_SUMS_SQL, hasValidSession, unauthorized } from "./_utils.js";
 
 // GET /api/months
 // One row per calendar month that has at least one transaction, newest
 // first, with the total received and the below/above-₹2,000 breakdown.
-export async function onRequestGet({ env }) {
+// Requires the History password (see auth/).
+export async function onRequestGet({ request, env }) {
+  if (!(await hasValidSession(request, env))) return unauthorized();
+
   const result = await env.DB.prepare(
     `SELECT
        substr(txn_date, 1, 7) AS month,
